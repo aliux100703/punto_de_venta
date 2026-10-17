@@ -50,7 +50,16 @@ return [
     |
     */
 
+    'diagnostics_slow_ms' => env('LOG_SLOW_REQUEST_MS', 1500),
+
     'channels' => [
+        'diagnostics' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/diagnostics.log'),
+            'level' => env('LOG_DIAGNOSTICS_LEVEL', 'info'),
+            'days' => env('LOG_DIAGNOSTICS_DAYS', 14),
+            'replace_placeholders' => true,
+        ],
 
         'stack' => [
             'driver' => 'stack',

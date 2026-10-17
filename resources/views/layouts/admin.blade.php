@@ -74,7 +74,7 @@
         @if($sellerReadOnly)<div class="alert alert-info d-print-none"><strong>Modo consulta.</strong> Abre tu caja para vender o modificar datos. <a href="{{ route('shift.start') }}">Abrir mi caja</a></div>@endif
         @if(session('warning'))<div class="alert alert-warning">{{ session('warning') }}</div>@endif
         @if(session('success'))<div role="status" class="alert alert-success"><x-icon name="check" size="19" /> {{ session('success') }}</div>@endif
-        @if($errors->any())<div role="alert" class="alert alert-danger"><strong>Revisa los siguientes datos</strong><ul class="mb-0 mt-2">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
+        @if($errors->any())<div role="alert" class="alert alert-danger"><strong>Revisa los siguientes datos</strong><small class="d-block">Referencia: {{ session('diagnostic_error_id', request()->attributes->get('request_id')) }}</small><ul class="mb-0 mt-2">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
         @unless(request()->routeIs('dashboard', 'pos.index'))
             <div class="page-heading"><div><span class="eyebrow">MI ESPACIO DE TRABAJO</span><h1>{{ $title }}</h1><p>{{ $descriptions[$sectionKey] ?? 'Todos los detalles, en un solo lugar.' }}</p></div><span class="date-pill"><x-icon name="calendar" size="16" />{{ now()->locale('es')->isoFormat('D MMM YYYY') }}</span></div>
         @endunless

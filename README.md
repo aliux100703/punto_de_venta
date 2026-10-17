@@ -4,16 +4,17 @@ Punto de venta con Laravel 12, PHP 8.2+, Bootstrap 5, Alpine y Vite. Interfaz en
 
 ## Instalación local
 
-Requisitos: PHP 8.2 o superior con PDO SQLite (o MySQL), Composer y Node.js compatible con Vite 7 (20.19+ o 22.12+).
+Instala Git, PHP 8.2 o superior con sus extensiones, Composer 2 y Node.js compatible con Vite 7 (20.19+ de la rama 20, o 22.12+). SQLite está configurado por defecto; MySQL/MariaDB requiere un servidor propio.
+
+Consulta [Instalación paso a paso](INSTALACION.md) para los requisitos, configuración de PHP y PATH en Windows, preparación de la base, dependencias y soluciones a errores frecuentes.
+
+Con las dependencias, `.env`, APP_KEY, tablas y recursos preparados, inicia el proyecto:
 
 ```powershell
-composer run setup
 php artisan serve
 ```
 
-`setup` instala dependencias, crea `.env` si no existe, genera la clave, ejecuta migraciones, carga catálogos iniciales y compila los recursos. La configuración de ejemplo utiliza SQLite. Para MySQL, configura DB_CONNECTION, DB_HOST, DB_PORT, DB_DATABASE, DB_USERNAME y DB_PASSWORD antes de ejecutar las migraciones.
-
-Abre http://127.0.0.1:8000 y crea una cuenta. No hay contraseñas predeterminadas. En desarrollo con recarga automática ejecuta `npm run dev` en otra terminal.
+Abre http://127.0.0.1:8000. La primera cuenta será Administrador y no hay contraseñas predeterminadas. Para recarga automática, ejecuta `npm run dev` en otra terminal. Para una instalación existente sigue la sección de actualización de la guía y conserva su APP_KEY.
 
 ## Flujo de operación
 
@@ -103,3 +104,35 @@ Los administradores pueden consultar `/audit` desde el menú Bitácora y filtrar
 Al iniciar sesión, el vendedor pasa por `/shift/start`: puede abrir caja con un fondo inicial o entrar en modo consulta. Sin caja propia abierta no puede cobrar (incluidos tarjeta y transferencia), crear, editar ni eliminar datos; solo consulta pantallas, listas y comprobantes. Puede abrir caja posteriormente. Una caja existente se conserva y no se duplica. Los permisos administrativos mantienen su comportamiento.
 
 El vendedor cierra caja desde Finalizar sesión o Cerrar caja y finalizar sesión. Se muestra el efectivo esperado y se solicita efectivo contado; confirmar guarda el cierre y la diferencia, registra la salida y termina la sesión. Cancelar conserva caja y sesión. Sin caja abierta puede salir directamente. El cierre compara el ID del turno para evitar cerrar otra caja desde una pantalla anterior. Las operaciones del vendedor usan el mismo bloqueo de usuario para coordinar cobros y cierre. Cerrar la pestaña o expirar la sesión no cierra automáticamente la caja: al regresar se retoma el turno pendiente.
+
+## Logs y soporte técnico
+
+Los logs se generan en `storage/logs/diagnostics-AAAA-MM-DD.log`. Cada solicitud recibe una referencia `X-Request-ID`; los errores JSON incluyen `request_id` y los avisos de error muestran la referencia para localizar el fallo.
+
+Se registran excepciones con archivo, línea y traza sin argumentos, operaciones que modifican datos, respuestas de error, campos rechazados por validación y solicitudes lentas. Incluyen ruta, usuario cuando está disponible, estado HTTP y duración. Los fallos capturados por caja e inventario también quedan registrados.
+
+### Investigar un fallo
+
+1. Anota la referencia del error, la hora y la operación realizada.
+2. Busca la referencia en los archivos de diagnóstico:
+
+    ```powershell
+    Select-String -Path storage/logs/diagnostics-*.log -SimpleMatch 'REFERENCIA-DEL-ERROR'
+    ```
+
+3. Revisa los eventos `http.request` y `application.exception` asociados a la referencia.
+4. Ante un fallo al cobrar, comprueba si la venta quedó registrada antes de repetir el cobro.
+
+### Configuración de logs
+
+```dotenv
+LOG_DIAGNOSTICS_LEVEL=info
+LOG_DIAGNOSTICS_DAYS=14
+LOG_SLOW_REQUEST_MS=1500
+```
+
+Los archivos rotan diariamente, con retención predeterminada de 14 días. El proceso PHP necesita permiso de escritura en `storage/logs`. Las solicitudes normales de lectura no generan entradas, salvo error o lentitud. Si utilizas caché de configuración, reconstrúyela tras cambiar estas variables.
+
+Estos logs no guardan cuerpos de solicitudes, contraseñas, tokens, cookies, mensajes crudos de excepciones ni consultas SQL con sus valores. La bitácora administrativa conserva su función de historial de actividad. Los logs del navegador y del servidor web se revisan por separado.
+
+Guía completa: [Logs y diagnóstico](LOGS_Y_DIAGNOSTICO.md). Estado y pendientes: [Estado del POS](ESTADO_Y_PENDIENTES_POS.md).

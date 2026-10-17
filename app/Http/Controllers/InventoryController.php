@@ -4,10 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\InventoryMovement;
 use App\Models\Product;
-use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class InventoryController extends Controller
 {
@@ -149,9 +149,7 @@ class InventoryController extends Controller
                     ! $lockedProduct->unit->allows_decimals &&
                     floor($quantity) != $quantity
                 ) {
-                    throw new Exception(
-                        'Este producto no permite cantidades decimales.'
-                    );
+                    throw ValidationException::withMessages(['inventory' => 'Este producto no permite cantidades decimales.']);
                 }
 
                 switch ($validated['type']) {
@@ -176,22 +174,18 @@ class InventoryController extends Controller
 
                     default:
 
-                        throw new Exception(
-                            'Tipo de movimiento no válido.'
-                        );
+                        throw ValidationException::withMessages(['inventory' => 'Tipo de movimiento no válido.']);
                 }
 
                 /*
                  * Nunca permitimos inventario negativo.
                  */
                 if ($newStock > 999999999.999) {
-                    throw new Exception('El inventario supera el máximo permitido.');
+                    throw ValidationException::withMessages(['inventory' => 'El inventario supera el máximo permitido.']);
                 }
                 if ($newStock < 0) {
 
-                    throw new Exception(
-                        'No existe suficiente inventario para realizar este movimiento.'
-                    );
+                    throw ValidationException::withMessages(['inventory' => 'No existe suficiente inventario para realizar este movimiento.']);
                 }
 
                 /*
@@ -235,12 +229,15 @@ class InventoryController extends Controller
                     'Movimiento registrado correctamente.'
                 );
 
-        } catch (Exception $e) {
+        } catch (ValidationException $e) {
+            throw $e;
+        } catch (\Throwable $e) {
+            report($e);
 
             return back()
                 ->withInput()
                 ->withErrors([
-                    'inventory' => $e->getMessage(),
+                    'inventory' => 'No fue posible registrar el movimiento. Referencia: '.request()->attributes->get('request_id'),
                 ]);
         }
     }

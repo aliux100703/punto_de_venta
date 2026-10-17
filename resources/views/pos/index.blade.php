@@ -112,7 +112,7 @@
                 if (!response.ok) {
 
                     showAlert(
-                        data.message ?? 'Producto no encontrado.',
+                        (data.message ?? 'Producto no encontrado.') + (data.request_id && !(data.message ?? '').includes(data.request_id) ? ' Referencia: ' + data.request_id : ''),
                         'danger'
                     );
 
@@ -664,7 +664,7 @@
 
 
                 showAlert(
-                    message,
+                    message + (data.request_id && !message.includes(data.request_id) ? ' Referencia: ' + data.request_id : ''),
                     'danger'
                 );
 

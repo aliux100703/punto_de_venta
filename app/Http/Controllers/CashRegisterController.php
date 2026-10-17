@@ -139,7 +139,7 @@ class CashRegisterController extends Controller
             report($e);
 
             return back()->withErrors([
-                'cash' => 'No fue posible abrir la caja.',
+                'cash' => 'No fue posible abrir la caja. Referencia: '.request()->attributes->get('request_id'),
             ]);
         }
     }
@@ -252,7 +252,7 @@ class CashRegisterController extends Controller
             report($e);
 
             return back()->withErrors([
-                'cash' => 'No fue posible cerrar la caja.',
+                'cash' => 'No fue posible cerrar la caja. Referencia: '.request()->attributes->get('request_id'),
             ]);
         }
     }
