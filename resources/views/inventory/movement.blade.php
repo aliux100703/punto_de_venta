@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-admin-layout title="Movimiento de inventario">
 
     <x-slot name="header">
 
@@ -250,4 +250,4 @@
 
     </div>
 
-</x-app-layout>
+</x-admin-layout>

@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Product;
 use App\Models\InventoryMovement;
+use App\Models\Product;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
-use Exception;
 
 class InventoryController extends Controller
 {
@@ -21,27 +21,26 @@ class InventoryController extends Controller
         $products = Product::with([
             'category',
             'brand',
-            'unit'
+            'unit',
         ])
-        ->when($search, function ($query, $search) {
-            $query->where(function ($q) use ($search) {
+            ->when($search, function ($query, $search) {
+                $query->where(function ($q) use ($search) {
 
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('sku', 'like', "%{$search}%")
-                    ->orWhere('barcode', 'like', "%{$search}%");
+                    $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('sku', 'like', "%{$search}%")
+                        ->orWhere('barcode', 'like', "%{$search}%");
 
-            });
-        })
-        ->orderBy('name')
-        ->paginate(20)
-        ->withQueryString();
+                });
+            })
+            ->orderBy('name')
+            ->paginate(20)
+            ->withQueryString();
 
         return view('inventory.index', compact(
             'products',
             'search'
         ));
     }
-
 
     /**
      * Historial de movimientos de un producto.
@@ -51,7 +50,7 @@ class InventoryController extends Controller
         $product->load([
             'category',
             'brand',
-            'unit'
+            'unit',
         ]);
 
         $movements = $product
@@ -66,7 +65,6 @@ class InventoryController extends Controller
         ));
     }
 
-
     /**
      * Formulario para registrar movimiento.
      */
@@ -75,7 +73,7 @@ class InventoryController extends Controller
         $product->load([
             'category',
             'brand',
-            'unit'
+            'unit',
         ]);
 
         return view(
@@ -83,7 +81,6 @@ class InventoryController extends Controller
             compact('product')
         );
     }
-
 
     /**
      * Guardar movimiento de inventario.
@@ -107,6 +104,8 @@ class InventoryController extends Controller
                 'required',
                 'numeric',
                 'gt:0',
+                'decimal:0,3',
+                'max:999999999.999',
             ],
 
             'reason' => [
@@ -131,8 +130,8 @@ class InventoryController extends Controller
                     'id',
                     $product->id
                 )
-                ->lockForUpdate()
-                ->firstOrFail();
+                    ->lockForUpdate()
+                    ->firstOrFail();
 
                 $previousStock = (float)
                     $lockedProduct->current_stock;
@@ -147,7 +146,7 @@ class InventoryController extends Controller
                 $lockedProduct->load('unit');
 
                 if (
-                    !$lockedProduct->unit->allows_decimals &&
+                    ! $lockedProduct->unit->allows_decimals &&
                     floor($quantity) != $quantity
                 ) {
                     throw new Exception(
@@ -166,7 +165,6 @@ class InventoryController extends Controller
 
                         break;
 
-
                     case 'AJUSTE_NEGATIVO':
 
                     case 'MERMA':
@@ -175,7 +173,6 @@ class InventoryController extends Controller
                             $previousStock - $quantity;
 
                         break;
-
 
                     default:
 
@@ -187,6 +184,9 @@ class InventoryController extends Controller
                 /*
                  * Nunca permitimos inventario negativo.
                  */
+                if ($newStock > 999999999.999) {
+                    throw new Exception('El inventario supera el máximo permitido.');
+                }
                 if ($newStock < 0) {
 
                     throw new Exception(
@@ -240,7 +240,7 @@ class InventoryController extends Controller
             return back()
                 ->withInput()
                 ->withErrors([
-                    'inventory' => $e->getMessage()
+                    'inventory' => $e->getMessage(),
                 ]);
         }
     }

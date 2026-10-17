@@ -9,7 +9,7 @@ class RoleSeeder extends Seeder
 {
     public function run(): void
     {
-        DB::table('roles')->insert([
+        DB::table('roles')->upsert([
             [
                 'name' => 'Administrador',
                 'created_at' => now(),
@@ -20,6 +20,6 @@ class RoleSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
-        ]);
+        ], ['name'], ['name']);
     }
 }

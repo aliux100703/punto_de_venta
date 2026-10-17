@@ -1,0 +1,7 @@
+<x-admin-layout :title="$customer->exists ? 'Editar cliente' : 'Nuevo cliente'">
+<form method="POST" action="{{ $customer->exists ? route('customers.update', $customer) : route('customers.store') }}" class="card card-body">@csrf @if($customer->exists) @method('PUT') @endif
+<div class="row g-3">@foreach(['name' => 'Nombre', 'business_name' => 'Razón social', 'rfc' => 'RFC', 'phone' => 'Teléfono', 'email' => 'Correo electrónico', 'address' => 'Dirección', 'postal_code' => 'Código postal', 'tax_regime' => 'Régimen fiscal', 'cfdi_use' => 'Uso de CFDI'] as $field => $label)
+<div class="col-md-6"><label for="{{ $field }}" class="form-label">{{ $label }}</label><input id="{{ $field }}" name="{{ $field }}" class="form-control" type="{{ $field === 'email' ? 'email' : 'text' }}" value="{{ old($field, $customer->$field) }}" @required($field === 'name')></div>@endforeach
+<div class="col-md-6"><label class="form-label" for="active">Estado</label><select name="active" id="active" class="form-select"><option value="1" @selected(old('active', $customer->active) == 1)>Activo</option><option value="0" @selected(old('active', $customer->active) == 0)>Inactivo</option></select></div></div>
+<div class="mt-4"><button class="btn btn-primary">Guardar cliente</button> <a href="{{ route('customers.index') }}" class="btn btn-outline-secondary">Volver</a></div></form>
+</x-admin-layout>

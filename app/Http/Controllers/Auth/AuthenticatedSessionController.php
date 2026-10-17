@@ -28,6 +28,12 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        if ($request->user()->hasRole('Vendedor')) {
+            $request->session()->forget('url.intended');
+
+            return to_route('shift.start');
+        }
+
         return redirect()->intended(route('dashboard', absolute: false));
     }
 
@@ -36,6 +42,9 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        if ($request->user()->hasRole('Vendedor') && $request->user()->cashRegisters()->where('status', 'ABIERTA')->exists()) {
+            return to_route('shift.end');
+        }
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();

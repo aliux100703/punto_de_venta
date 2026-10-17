@@ -1,0 +1,8 @@
+<x-admin-layout title="Cotizaciones">
+<div class="card"><div class="panel-heading"><div><h2>Tus propuestas, en un solo lugar</h2><p>{{ $quotes->total() }} cotizaciones registradas</p></div><a class="btn btn-primary" href="{{ route('quotes.create') }}"><x-icon name="plus" size="15" /> Nueva cotización</a></div><div class="table-responsive"><table class="table"><thead><tr><th>Cotización</th><th>Cliente</th><th>Vigencia</th><th>Estado</th><th>Total</th><th></th></tr></thead><tbody>
+@forelse($quotes as $quote)
+@php($displayStatus = in_array($quote->status, ['PENDIENTE','ACEPTADA']) && $quote->expiration_date?->lt(today()) ? 'VENCIDA' : $quote->status)
+<tr><td><div class="table-identity"><span><x-icon name="file" size="15" /></span><a href="{{ route('quotes.show', $quote) }}">{{ $quote->folio }}</a></div></td><td>{{ $quote->customer?->name ?? 'Público general' }}</td><td>{{ $quote->expiration_date?->format('d/m/Y') ?? 'Sin vencimiento' }}</td><td><span class="status-pill {{ $displayStatus === 'PENDIENTE' ? 'amber' : (in_array($displayStatus, ['VENCIDA', 'RECHAZADA']) ? 'gray' : '') }}">{{ ucfirst(mb_strtolower($displayStatus)) }}</span></td><td class="fw-semibold">${{ number_format($quote->total, 2) }}</td><td><a aria-label="Ver cotización {{ $quote->folio }}" href="{{ route('quotes.show', $quote) }}"><x-icon name="chevron" size="15" /></a></td></tr>
+@empty<tr><td colspan="6"><div class="empty-state"><x-icon name="file" size="27" /><strong>Tu próxima venta puede empezar con una propuesta.</strong><p>Aún no hay cotizaciones registradas.</p></div></td></tr>@endforelse
+</tbody></table></div></div><div class="mt-3">{{ $quotes->links() }}</div>
+</x-admin-layout>

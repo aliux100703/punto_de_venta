@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CashMovement extends Model
 {
@@ -18,19 +17,18 @@ class CashMovement extends Model
         'notes',
     ];
 
-    protected function casts(): array
+    protected $casts = [
+        'amount' => 'decimal:2',
+    ];
+
+    public function cashRegister()
     {
-        return [
-            'amount' => 'decimal:2',
-        ];
+        return $this->belongsTo(
+            CashRegister::class
+        );
     }
 
-    public function cashRegister(): BelongsTo
-    {
-        return $this->belongsTo(CashRegister::class);
-    }
-
-    public function user(): BelongsTo
+    public function user()
     {
         return $this->belongsTo(User::class);
     }

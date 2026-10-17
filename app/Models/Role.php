@@ -7,6 +7,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Role extends Model
 {
+    public const ADMINISTRATOR = 'Administrador';
+
+    public const SELLER = 'Vendedor';
+
     protected $fillable = [
         'name',
     ];

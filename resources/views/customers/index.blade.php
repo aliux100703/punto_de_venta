@@ -1,0 +1,8 @@
+<x-admin-layout title="Clientes">
+<div class="card"><div class="panel-heading"><div><h2>Tu comunidad de clientes</h2><p>{{ $customers->total() }} clientes encontrados</p></div><a class="btn btn-primary" href="{{ route('customers.create') }}"><x-icon name="plus" size="15" /> Nuevo cliente</a></div>
+<form class="d-flex gap-2 px-4 pb-4" action="{{ route('customers.index') }}" method="GET"><input aria-label="Buscar cliente" class="form-control" name="search" value="{{ $search }}" placeholder="Encuentra un cliente por nombre o RFC…" maxlength="150"><button class="btn btn-outline-primary"><x-icon name="search" size="15" /> Buscar</button></form>
+<div class="table-responsive"><table class="table"><thead><tr><th>Cliente</th><th>RFC</th><th>Contacto</th><th>Estado</th><th></th></tr></thead><tbody>
+@forelse($customers as $customer)<tr><td><div class="table-identity"><span><x-icon name="user" size="15" /></span><div>{{ $customer->name }}<small>{{ $customer->business_name }}</small></div></div></td><td>{{ $customer->rfc ?? '—' }}</td><td>{{ $customer->email ?? 'Sin correo' }}<small class="d-block text-muted">{{ $customer->phone }}</small></td><td><span class="status-pill {{ $customer->active ? '' : 'gray' }}">{{ $customer->active ? 'Activo' : 'Inactivo' }}</span></td><td><a class="btn btn-sm btn-outline-primary" href="{{ route('customers.edit', $customer) }}">Ver y editar <x-icon name="chevron" size="13" /></a></td></tr>
+@empty<tr><td colspan="5"><div class="empty-state"><x-icon name="users" size="27" /><strong>Las buenas relaciones empiezan aquí.</strong><p>No hay clientes que coincidan con tu búsqueda.</p></div></td></tr>@endforelse
+</tbody></table></div></div><div class="mt-3">{{ $customers->links() }}</div>
+</x-admin-layout>

@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-admin-layout title="Nuevo producto">
 
     <x-slot name="header">
         <h2 class="font-semibold text-xl">
@@ -44,4 +44,4 @@
         </div>
     </div>
 
-</x-app-layout>
+</x-admin-layout>

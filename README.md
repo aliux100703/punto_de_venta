@@ -1,60 +1,105 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# InnovateCode POS
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Punto de venta con Laravel 12, PHP 8.2+, Bootstrap 5, Alpine y Vite. Interfaz en español e importes en MXN.
 
-## About Laravel
+## Instalación local
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Requisitos: PHP 8.2 o superior con PDO SQLite (o MySQL), Composer y Node.js compatible con Vite 7 (20.19+ o 22.12+).
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+```powershell
+composer run setup
+php artisan serve
+```
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+`setup` instala dependencias, crea `.env` si no existe, genera la clave, ejecuta migraciones, carga catálogos iniciales y compila los recursos. La configuración de ejemplo utiliza SQLite. Para MySQL, configura DB_CONNECTION, DB_HOST, DB_PORT, DB_DATABASE, DB_USERNAME y DB_PASSWORD antes de ejecutar las migraciones.
 
-## Learning Laravel
+Abre http://127.0.0.1:8000 y crea una cuenta. No hay contraseñas predeterminadas. En desarrollo con recarga automática ejecuta `npm run dev` en otra terminal.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+## Flujo de operación
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+1. En Catálogos administra categorías, marcas, unidades y categorías de gastos.
+2. Crea productos y registra existencias desde Inventario → Movimiento. El stock solo cambia mediante movimientos y ventas.
+3. Abre tu caja con el fondo inicial. Cada usuario tiene su propia caja.
+4. En Punto de venta busca por código, SKU o nombre; elige cliente, pago y efectivo recibido. El servidor calcula precios, impuestos y cambio, y registra venta, pago, movimiento de inventario y entrada de efectivo en una transacción.
+5. Consulta Ventas para filtrar por folio y fechas, ver detalles e imprimir comprobantes.
+6. Crea cotizaciones con vigencia. No reservan stock. Al cobrarlas se validan las existencias y se respetan los precios cotizados; cada cotización solo se convierte una vez.
+7. Registra Gastos. Los pagos en efectivo requieren caja abierta y saldo suficiente, y generan una salida.
+8. Cierra caja indicando el efectivo contado. Se guarda el esperado y la diferencia.
 
-## Laravel Sponsors
+## Verificación
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+```powershell
+php artisan test
+npm run build
+php vendor/bin/pint --dirty --test
+```
 
-### Premium Partners
+Las pruebas usan SQLite en memoria, sin modificar la base operativa. Cubren autenticación, perfil, ventas, rollback, inventario, caja, gastos, clientes y conversión de cotizaciones.
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+## Alcance
 
-## Contributing
+Los permisos se controlan en el servidor y en la interfaz según el rol; la caja es individual. Los catálogos y clientes se desactivan conservando su historial. Los comprobantes imprimibles no son CFDI. No se incluye timbrado fiscal ni compras a proveedores.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Para publicar, configura APP_ENV=production, APP_DEBUG=false, APP_URL, correo SMTP real y HTTPS. El correo usa el registro local de Laravel por defecto. No ejecutes `migrate:fresh` sobre una base con datos.
+## Usuarios y permisos
 
-## Code of Conduct
+| Función | Administrador | Vendedor |
+| --- | --- | --- |
+| Punto de venta y caja propia | Sí | Sí |
+| Ventas y cotizaciones | Todas | Solo propias |
+| Clientes | Gestionar | Gestionar |
+| Productos | Gestionar y consultar costo | Consultar sin costo |
+| Inventario | Consultar y registrar movimientos | Consultar |
+| Gastos y catálogos | Gestionar | Sin acceso |
+| Usuarios y asignación de roles | Gestionar | Sin acceso |
+| Panel | Actividad del negocio | Actividad propia |
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+El registro público solo permite crear la primera cuenta de la instalación, con rol Administrador. Después, las cuentas se crean desde **Usuarios**. No se permite eliminar ni degradar al último administrador. El rol no se puede modificar desde el perfil ni enviando un campo extra al registro.
 
-## Security Vulnerabilities
+Para actualizar una instalación existente, ejecuta `php artisan migrate --force`. Si solo existe una cuenta, se asigna como Administrador; con varias cuentas, se asigna Vendedor a las cuentas sin rol y el propietario debe elegir explícitamente al administrador mediante `php artisan users:make-admin correo@ejemplo.com`.
+## Productos de demostración
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Para cargar un catálogo de ejemplo de ferretería, con una cuenta Administrador ya creada:
 
-## License
+```powershell
+php artisan db:seed --class=ProductSeeder
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
-# punto_de_venta
+Se crean 35 productos con SKU `DEMO-FER-001` a `DEMO-FER-035`, marcas de demostración, categorías y unidades. Incluyen costos y precios ficticios, IVA de ejemplo del 16%, existencias iniciales y movimientos de entrada atribuidos al primer administrador. Hay productos por pieza, bolsa, rollo, metro, kilogramo y litro, además de algunos con existencias bajas para probar las alertas.
+
+El seeder es opcional y no se ejecuta dentro de `DatabaseSeeder`. Repetirlo conserva los productos existentes por SKU, sus cambios de precio, estado y existencias; no duplica movimientos ni repone automáticamente el inventario. Un conflicto de código de barras cancela toda la carga.
+
+Los códigos `200000…` tienen dígito de control EAN-13 para pruebas internas. No son códigos oficiales de fabricantes y los importes no representan precios comerciales. Sustituye los datos de demostración antes de operar con mercancía real.
+## Cancelaciones y devoluciones
+
+Solo el Administrador puede registrar ajustes. Desde **Ventas → Detalle de venta** se puede:
+
+- Cancelar una venta completa sin devoluciones previas. Se reintegran todos los productos y se registra el reembolso completo.
+- Devolver uno o varios productos, en cantidades parciales o totales, hasta el límite vendido. La venta queda en DEVOLUCION_PARCIAL o DEVUELTA.
+- Desmarcar **Reintegrar** para mercancía que no vuelve al inventario disponible. La cantidad se cuenta como devuelta, pero no aumenta las existencias.
+- Indicar un motivo obligatorio y consultar el folio, responsable, conceptos, reembolso y comprobante de cada ajuste.
+
+En efectivo, el importe sale de la caja abierta del administrador que procesa la operación, con saldo suficiente. Puede ser una caja distinta de la original o de un turno posterior; no se cambian movimientos ni cierres anteriores. Si el importe calculado es cero no se genera una salida de efectivo.
+
+Los pagos con tarjeta o transferencia no admiten devoluciones ni cancelaciones con reembolso. Se conserva el método de pago original aunque después se desactive o renombre. Los pagos mixtos o importes inconsistentes requieren conciliación.
+
+Los pagos y totales originales permanecen intactos. Las devoluciones se calculan usando los importes originales de cada concepto y una asignación acumulada de centavos para evitar errores en devoluciones sucesivas. Los reportes y gráficas muestran ventas netas de devoluciones según la fecha original de la venta, mientras que Caja refleja la salida en la fecha del reembolso.
+
+Cada solicitud tiene una clave única: repetir la misma operación con la misma clave no duplica el reembolso ni las existencias. Reutilizar la clave con otros datos se rechaza. Los cambios de venta, historial, inventario y caja se guardan dentro de una transacción con bloqueo de registros.
+
+El menú **Devoluciones** permite buscar cancelaciones o devoluciones por su folio o el de la venta. El vendedor puede consultar el historial y los comprobantes de sus propias ventas, pero no registrar ajustes ni acceder al historial global.
+
+Una cotización convertida permanece vinculada a la venta aunque esta se cancele; no se habilita un segundo cobro de la misma cotización. Este módulo registra ajustes internos del POS y no cancela CFDI.
+### Política de reembolsos
+
+Solo se permiten devoluciones y cancelaciones con reembolso de ventas pagadas en efectivo, hasta 72 horas inclusive desde la compra original. Las devoluciones parciales no reinician el plazo. No se permiten para tarjeta o transferencia, incluso con referencia bancaria. La política y la fecha límite para efectivo se imprimen en el comprobante de venta. Los registros históricos se conservan.
+
+### Bitácora de auditoría
+
+Los administradores pueden consultar `/audit` desde el menú Bitácora y filtrar por fechas, evento, usuario, responsable, entidad o IP. Registra accesos exitosos, fallidos, bloqueos por intentos y cierres explícitos de sesión; también altas, modificaciones y bajas realizadas con una sesión autenticada en productos, usuarios, roles, clientes, catálogos, ventas, devoluciones, cotizaciones, gastos, caja e inventario. Conserva usuario, fecha, IP, dispositivo y campos permitidos antes/después. No guarda contraseñas, hashes, tokens ni cuerpos completos de solicitudes. Los cambios de contraseña solo generan una marca. No reconstruye eventos anteriores ni registra modificaciones SQL externas o tareas sin usuario autenticado. El cierre automático por expiración de sesión no genera un evento de salida. No ofrece rutas para editar o borrar registros.
+
+### Turno del vendedor
+
+Al iniciar sesión, el vendedor pasa por `/shift/start`: puede abrir caja con un fondo inicial o entrar en modo consulta. Sin caja propia abierta no puede cobrar (incluidos tarjeta y transferencia), crear, editar ni eliminar datos; solo consulta pantallas, listas y comprobantes. Puede abrir caja posteriormente. Una caja existente se conserva y no se duplica. Los permisos administrativos mantienen su comportamiento.
+
+El vendedor cierra caja desde Finalizar sesión o Cerrar caja y finalizar sesión. Se muestra el efectivo esperado y se solicita efectivo contado; confirmar guarda el cierre y la diferencia, registra la salida y termina la sesión. Cancelar conserva caja y sesión. Sin caja abierta puede salir directamente. El cierre compara el ID del turno para evitar cerrar otra caja desde una pantalla anterior. Las operaciones del vendedor usan el mismo bloqueo de usuario para coordinar cobros y cierre. Cerrar la pestaña o expirar la sesión no cierra automáticamente la caja: al regresar se retoma el turno pendiente.

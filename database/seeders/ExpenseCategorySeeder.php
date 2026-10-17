@@ -9,7 +9,7 @@ class ExpenseCategorySeeder extends Seeder
 {
     public function run(): void
     {
-        DB::table('expense_categories')->insert([
+        DB::table('expense_categories')->upsert([
             [
                 'name' => 'Compra de mercancía',
                 'active' => true,
@@ -58,6 +58,6 @@ class ExpenseCategorySeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
-        ]);
+        ], ['name'], ['name']);
     }
 }

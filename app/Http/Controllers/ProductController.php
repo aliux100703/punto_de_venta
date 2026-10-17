@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Product;
-use App\Models\Category;
 use App\Models\Brand;
+use App\Models\Category;
+use App\Models\Product;
 use App\Models\Unit;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class ProductController extends Controller
 {
@@ -16,7 +17,7 @@ class ProductController extends Controller
         $products = Product::with([
             'category',
             'brand',
-            'unit'
+            'unit',
         ])->orderBy('name')->paginate(20);
 
         return view('products.index', compact('products'));
@@ -48,67 +49,71 @@ class ProductController extends Controller
         $validated = $request->validate([
             'category_id' => [
                 'nullable',
-                'exists:categories,id'
+                'exists:categories,id',
             ],
 
             'brand_id' => [
                 'nullable',
-                'exists:brands,id'
+                'exists:brands,id',
             ],
 
             'unit_id' => [
                 'required',
-                'exists:units,id'
+                'exists:units,id',
             ],
 
             'sku' => [
                 'nullable',
                 'string',
                 'max:100',
-                'unique:products,sku'
+                'unique:products,sku',
             ],
 
             'barcode' => [
                 'nullable',
                 'string',
                 'max:100',
-                'unique:products,barcode'
+                'unique:products,barcode',
             ],
 
             'name' => [
                 'required',
                 'string',
-                'max:200'
+                'max:200',
             ],
 
             'description' => [
                 'nullable',
-                'string'
+                'string',
             ],
 
             'cost' => [
                 'required',
                 'numeric',
-                'min:0'
+                'max:9999999999.99',
+                'min:0',
             ],
 
             'sale_price' => [
                 'required',
                 'numeric',
-                'min:0'
+                'max:9999999999.99',
+                'min:0',
             ],
 
             'tax_percentage' => [
                 'required',
                 'numeric',
+                'max:9999999999.99',
                 'min:0',
-                'max:100'
+                'max:100',
             ],
 
             'minimum_stock' => [
                 'required',
                 'numeric',
-                'min:0'
+                'max:999999999.999',
+                'min:0',
             ],
         ]);
 
@@ -132,7 +137,7 @@ class ProductController extends Controller
             'category',
             'brand',
             'unit',
-            'inventoryMovements.user'
+            'inventoryMovements.user',
         ]);
 
         return view('products.show', compact('product'));
@@ -165,17 +170,17 @@ class ProductController extends Controller
         $validated = $request->validate([
             'category_id' => [
                 'nullable',
-                'exists:categories,id'
+                'exists:categories,id',
             ],
 
             'brand_id' => [
                 'nullable',
-                'exists:brands,id'
+                'exists:brands,id',
             ],
 
             'unit_id' => [
                 'required',
-                'exists:units,id'
+                'exists:units,id',
             ],
 
             'sku' => [
@@ -183,7 +188,7 @@ class ProductController extends Controller
                 'string',
                 'max:100',
                 Rule::unique('products', 'sku')
-                    ->ignore($product->id)
+                    ->ignore($product->id),
             ],
 
             'barcode' => [
@@ -191,51 +196,59 @@ class ProductController extends Controller
                 'string',
                 'max:100',
                 Rule::unique('products', 'barcode')
-                    ->ignore($product->id)
+                    ->ignore($product->id),
             ],
 
             'name' => [
                 'required',
                 'string',
-                'max:200'
+                'max:200',
             ],
 
             'description' => [
                 'nullable',
-                'string'
+                'string',
             ],
 
             'cost' => [
                 'required',
                 'numeric',
-                'min:0'
+                'max:9999999999.99',
+                'min:0',
             ],
 
             'sale_price' => [
                 'required',
                 'numeric',
-                'min:0'
+                'max:9999999999.99',
+                'min:0',
             ],
 
             'tax_percentage' => [
                 'required',
                 'numeric',
+                'max:9999999999.99',
                 'min:0',
-                'max:100'
+                'max:100',
             ],
 
             'minimum_stock' => [
                 'required',
                 'numeric',
-                'min:0'
+                'max:999999999.999',
+                'min:0',
             ],
 
             'active' => [
                 'required',
-                'boolean'
+                'boolean',
             ],
         ]);
 
+        $unit = Unit::findOrFail($validated['unit_id']);
+        if (! $unit->allows_decimals && floor((float) $product->current_stock) != (float) $product->current_stock) {
+            throw ValidationException::withMessages(['unit_id' => 'No puedes elegir una unidad entera mientras el inventario tenga fracciones.']);
+        }
         $product->update($validated);
 
         return redirect()
@@ -250,7 +263,7 @@ class ProductController extends Controller
          * tener ventas o movimientos históricos.
          */
         $product->update([
-            'active' => false
+            'active' => false,
         ]);
 
         return redirect()

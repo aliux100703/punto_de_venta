@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -31,6 +32,11 @@ class Quote extends Model
             'total' => 'decimal:2',
             'expiration_date' => 'date',
         ];
+    }
+
+    public function scopeVisibleTo(Builder $query, User $user): Builder
+    {
+        return $query->when(! $user->isAdministrator(), fn ($query) => $query->where('user_id', $user->id));
     }
 
     public function customer(): BelongsTo

@@ -12,12 +12,14 @@ class SalePayment extends Model
         'payment_method_id',
         'amount',
         'reference',
+        'is_cash', 'method_name',
     ];
 
     protected function casts(): array
     {
         return [
             'amount' => 'decimal:2',
+            'is_cash' => 'boolean',
         ];
     }
 

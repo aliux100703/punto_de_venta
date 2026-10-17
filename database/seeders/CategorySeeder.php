@@ -9,7 +9,7 @@ class CategorySeeder extends Seeder
 {
     public function run(): void
     {
-        DB::table('categories')->insert([
+        DB::table('categories')->upsert([
             [
                 'name' => 'Herramientas',
                 'description' => 'Herramientas manuales y eléctricas',
@@ -59,6 +59,6 @@ class CategorySeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
-        ]);
+        ], ['name'], ['name']);
     }
 }

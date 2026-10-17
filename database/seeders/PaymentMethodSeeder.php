@@ -9,7 +9,7 @@ class PaymentMethodSeeder extends Seeder
 {
     public function run(): void
     {
-        DB::table('payment_methods')->insert([
+        DB::table('payment_methods')->upsert([
             [
                 'name' => 'Efectivo',
                 'active' => true,
@@ -28,6 +28,6 @@ class PaymentMethodSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
-        ]);
+        ], ['name'], ['name']);
     }
 }

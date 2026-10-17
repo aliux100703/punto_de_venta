@@ -1,4 +1,4 @@
-<x-admin-layout title="Inventory">
+<x-admin-layout title="Inventario">
 
     <x-slot name="header">
         <h2 class="font-semibold text-xl">
@@ -190,7 +190,8 @@
                                             </a>
 
 
-                                            <a
+                                            @can('manage-inventory')
+<a
                                                 href="{{ route(
                                                     'inventory.movement',
                                                     $product
@@ -199,6 +200,7 @@
                                             >
                                                 Movimiento
                                             </a>
+@endcan
 
                                         </td>
 
@@ -236,4 +238,4 @@
 
     </div>
 
-</x-app-layout>
+</x-admin-layout>

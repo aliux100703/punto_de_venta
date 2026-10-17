@@ -3,10 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\Role;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class ProfileController extends Controller
@@ -46,12 +50,18 @@ class ProfileController extends Controller
             'password' => ['required', 'current_password'],
         ]);
 
-        $user = $request->user();
-
+        DB::transaction(function () use ($request) {
+            $admin = Role::where('name', Role::ADMINISTRATOR)->lockForUpdate()->firstOrFail();
+            $user = User::whereKey($request->user()->id)->lockForUpdate()->firstOrFail();
+            if ($user->role_id === $admin->id && User::where('role_id', $admin->id)->count() <= 1) {
+                throw ValidationException::withMessages(['password' => 'No puedes eliminar al último administrador.'])->errorBag('userDeletion');
+            }
+            if ($user->saleReturns()->exists() || $user->sales()->exists() || $user->inventoryMovements()->exists() || $user->quotes()->exists() || $user->cashRegisters()->exists() || $user->cashMovements()->exists() || $user->expenses()->exists()) {
+                throw ValidationException::withMessages(['password' => 'Tu cuenta tiene operaciones registradas y debe conservarse para mantener el historial.'])->errorBag('userDeletion');
+            }
+            $user->delete();
+        });
         Auth::logout();
-
-        $user->delete();
-
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 

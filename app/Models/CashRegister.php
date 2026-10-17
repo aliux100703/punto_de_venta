@@ -3,8 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class CashRegister extends Model
 {
@@ -20,25 +18,25 @@ class CashRegister extends Model
         'notes',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'opened_at' => 'datetime',
-            'closed_at' => 'datetime',
-            'opening_amount' => 'decimal:2',
-            'expected_cash' => 'decimal:2',
-            'counted_cash' => 'decimal:2',
-            'difference' => 'decimal:2',
-        ];
-    }
+    protected $casts = [
+        'opened_at' => 'datetime',
+        'closed_at' => 'datetime',
 
-    public function user(): BelongsTo
+        'opening_amount' => 'decimal:2',
+        'expected_cash' => 'decimal:2',
+        'counted_cash' => 'decimal:2',
+        'difference' => 'decimal:2',
+    ];
+
+    public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    public function movements(): HasMany
+    public function movements()
     {
-        return $this->hasMany(CashMovement::class);
+        return $this->hasMany(
+            CashMovement::class
+        );
     }
 }

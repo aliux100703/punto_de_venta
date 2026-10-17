@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-admin-layout title="Historial de inventario">
 
     <x-slot name="header">
 
@@ -81,7 +81,8 @@
                             </div>
 
 
-                            <a
+                            @can('manage-inventory')
+<a
                                 href="{{ route(
                                     'inventory.movement',
                                     $product
@@ -90,6 +91,7 @@
                             >
                                 Nuevo movimiento
                             </a>
+@endcan
 
                         </div>
 
@@ -249,4 +251,4 @@
 
     </div>
 
-</x-app-layout>
+</x-admin-layout>

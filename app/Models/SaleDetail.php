@@ -18,6 +18,7 @@ class SaleDetail extends Model
         'tax',
         'subtotal',
         'total',
+        'returned_quantity', 'refunded_total', 'refunded_tax', 'refunded_discount', 'allows_decimals',
     ];
 
     protected function casts(): array
@@ -31,6 +32,7 @@ class SaleDetail extends Model
             'tax' => 'decimal:2',
             'subtotal' => 'decimal:2',
             'total' => 'decimal:2',
+            'returned_quantity' => 'decimal:3', 'refunded_total' => 'decimal:2', 'refunded_tax' => 'decimal:2', 'refunded_discount' => 'decimal:2', 'allows_decimals' => 'boolean',
         ];
     }
 
